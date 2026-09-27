@@ -1,0 +1,126 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck # Is a program for checking for unchecked errors in Go code.
+    - govet # Vet examines Go source code and reports suspicious constructs.
+    - ineffassign # Detects when assignments to existing variables are not used.
+    - staticcheck # It's the set of rules from staticcheck.
+    - unused # Checks Go code for unused constants, variables, functions and types.
+    - asasalint # Check for pass []any as any in variadic func(...any).
+    - asciicheck # Checks that all code identifiers does not have non-ASCII symbols in the name.
+    - bidichk # Checks for dangerous unicode character sequences.
+    - bodyclose # Checks whether HTTP response body is closed successfully.
+    - canonicalheader # Checks whether net/http.Header uses canonical header.
+    - containedctx # A linter that detects struct contained context.Context field.
+    - contextcheck # Check whether the function uses a non-inherited context.
+    - copyloopvar # A linter detects places where loop variables are copied.
+    - cyclop # Checks function and package cyclomatic complexity.
+    - decorder # Check declaration order and count of types, constants, variables and functions.
+    - dogsled # Checks assignments with too many blank identifiers (e.g. x, , , _, := f()).
+    - dupl # Detects duplicate fragments of code.
+    - dupword # Checks for duplicate words in the source code.
+    - durationcheck # Check for two durations multiplied together.
+    - embeddedstructfieldcheck # Embedded types should be at the top of the field list of a struct.
+    - errchkjson # Checks types passed to the json encoding functions.
+    - errname # Checks that sentinel errors are prefixed `Err`,error types are suffixed `Error`.
+    - errorlint # Find code that can cause problems with the error wrapping scheme
+    - exptostd # Detects functions from golang.org/x/exp/ that can be replaced by std functions.
+    - fatcontext # Detects nested contexts in loops and function literals.
+    - funcorder # Checks the order of functions, methods, and constructors.
+    - funlen # Checks for long functions.
+    - gocheckcompilerdirectives # Checks that go compiler directive comments (//go:) are valid.
+    - gochecknoinits # Checks that no init functions are present in Go code.
+    - gochecksumtype # Run exhaustiveness checks on Go "sum types".
+    - gocognit # Computes and checks the cognitive complexity of functions.
+    - goconst # Finds repeated strings that could be replaced by a constant.
+    - gocritic # Provides diagnostics that check for bugs, performance and style issues.
+    - gocyclo # Computes and checks the cyclomatic complexity of functions.
+    - godox # Detects usage of FIXME, TODO and other keywords inside comments.
+    - gosec # Inspects source code for security problems.
+    - gosmopolitan # Report certain i18n/l10n anti-patterns in your Go codebase.
+    - iface # Detect the incorrect use of interfaces, helping developers avoid interface pollution.
+    - inamedparam # Reports interfaces with unnamed method parameters.
+    - loggercheck # Checks key value pairs for common logger libraries (kitlog,klog,logr,slog,zap).
+    - makezero # Find slice declarations with non-zero initial length.
+    - mirror # Reports wrong mirror patterns of bytes/strings usage.
+    - misspell # Finds commonly misspelled English words.
+    - mnd # An analyzer to detect magic numbers.
+    - musttag # Enforce field tags in (un)marshaled structs.
+    - nakedret # Checks that functions with naked returns are not longer than a maximum size (can be zero).
+    - nestif # Reports deeply nested if statements.
+    - nilnesserr # Reports constructs that checks for err != nil, but returns a different nil value error.
+    - nilnil # Checks that there is no simultaneous return of `nil` error and an invalid value.
+    - nlreturn # Checks for a new line before return and branch statements to increase code clarity.
+    - noctx # Detects function and method with missing usage of context.Context.
+    - nonamedreturns # Reports all named returns.
+    - prealloc # Find slice declarations that could potentially be pre-allocated.
+    - predeclared # Find code that shadows one of Go's predeclared identifiers.
+    - reassign # Checks that package variables are not reassigned.
+    - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go.
+    - rowserrcheck # Checks whether Rows.Err of rows is checked successfully.
+    - sqlclosecheck # Checks that sql.Rows, sql.Stmt, sqlx.NamedStmt, pgx.Query are closed.
+    - tagalign # Check that struct tags are well aligned.
+    - tagliatelle # Checks the struct tags.
+    - testableexamples # Linter checks if examples are testable (have an expected output).
+    - thelper # Thelper detects tests helpers which is not start with t.Helper() method.
+    - unconvert # Remove unnecessary type conversions.
+    - usestdlibvars # A linter that detect the possibility to use variables/constants from the Go library.
+    - usetesting # Reports uses of functions with replacement inside the testing package.
+    - wastedassign # Finds wasted assignment statements.
+    - whitespace # Is a linter that checks for unnecessary newlines at the start and end of functions
+    - wsl_v5 # Add or remove empty lines.
+
+  exclusions:
+    paths:
+      - "vendor/"
+      - "docs/"
+      - "bin/"
+      - "data/"
+      - ".*/mocks/.*"
+    rules:
+      - path: '(.+)_test\.go' # Test is not code, we need to simplify the tests
+        linters:
+          - errcheck
+          - cyclop
+          - dupl
+          - dupword
+          - funcorder
+          - funlen
+          - gochecknoglobals
+          - gocognit
+          - goconst
+          - gosec
+          - mnd
+          - nestif
+          - noctx
+      - path: '(.+)_test\.go'
+        linters:
+          - revive
+        text: "^(add-constant|cognitive-complexity|function-length|cyclomatic|exported|unhandled-error|redundant-test-main-exit)"
+      - path: "pkg/logger/"
+        linters:
+          - noctx # No need for context in some logger methods
+
+  settings:
+    tagliatelle:
+      # The translation format is snake_case by design and part of the public
+      # contract (config.json uses base_region), so camelCase does not apply.
+      case:
+        rules:
+          json: snake
+    revive:
+      enable-all-rules: true
+      rules:
+        - name: unused-parameter
+          disabled: true
+        - name: line-length-limit
+          disabled: true
+        - name: unused-receiver
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: add-constant
+          disabled: true
+        - name: unhandled-error
+          disabled: true
