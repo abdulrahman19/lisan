@@ -1,6 +1,6 @@
 # Lisan
 
-**لسان** — compile-time-validated internationalization for Go.
+Lisan (**لسان**) — compile-time-validated internationalization for Go.
 
 Lisan reads JSON translation files, validates the whole tree before your program serves a request, and renders with CLDR-correct pluralization from `golang.org/x/text`.
 
