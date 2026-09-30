@@ -364,6 +364,66 @@ func TestCompileReportsLineNumbers(t *testing.T) {
 	}
 }
 
+// twoRegionConfig pairs en-US as base with a second region.
+func twoRegionConfig(other string) string {
+	return `{"settings":{"base_region":"en-US"},"regions":{
+        "en-US":{"name":"A","locales":["en-US"]},
+        "` + other + `":{"name":"B","locales":["` + other + `"]}}}`
+}
+
+func TestCompileDoesNotReportAnInvalidEntryAsMissing(t *testing.T) {
+	t.Parallel()
+
+	problems := compileProblems(t, map[string]string{
+		"config.json":  twoRegionConfig("ar"),
+		"en-US/a.json": `[{"id":"x","one":"one user","other":"{{count}} users"}]`,
+		"ar/a.json":    "[\n" + `  {"id":"x","one":"مستخدم","other":"{{count}} مستخدم"}` + "\n]",
+	})
+
+	if len(problems) != 1 {
+		t.Fatalf("got %d problems, want 1:\n%s", len(problems), joinProblems(problems))
+	}
+
+	if !strings.Contains(problems[0].String(), "missing: zero, two, few, many") {
+		t.Errorf("problem = %s, want the incomplete category set", problems[0].String())
+	}
+
+	if strings.Contains(problems[0].String(), "missing here") {
+		t.Errorf("problem = %s, want no missing-id report for a declared id", problems[0].String())
+	}
+}
+
+func TestCompileDoesNotReportAnEntryForeignWhenTheBaseEntryIsInvalid(t *testing.T) {
+	t.Parallel()
+
+	problems := compileProblems(t, map[string]string{
+		"config.json":  twoRegionConfig("pl-PL"),
+		"en-US/a.json": `[{"id":"x","one":"a","many":"b"}]`,
+		"pl-PL/a.json": `[{"id":"x","one":"a","few":"b","many":"c","other":"d"}]`,
+	})
+
+	if len(problems) != 1 {
+		t.Fatalf("got %d problems, want 1:\n%s", len(problems), joinProblems(problems))
+	}
+
+	if got := joinProblems(problems); strings.Contains(got, "is not declared in base region") {
+		t.Errorf("problems:\n%s\nwant no foreign-id report while the base entry is invalid", got)
+	}
+}
+
+func TestCompileStillReportsDuplicatesOfAnInvalidEntry(t *testing.T) {
+	t.Parallel()
+
+	problems := compileProblems(t, map[string]string{
+		"config.json":  minimalConfig("en-US"),
+		"en-US/a.json": `[{"id":"x","one":"a","many":"b"},{"id":"x","txt":"A"}]`,
+	})
+
+	if got := joinProblems(problems); !strings.Contains(got, `is already declared in region "en-US"`) {
+		t.Errorf("problems:\n%s\nwant a duplicate-id report", got)
+	}
+}
+
 func TestCompileResolvesEnvironmentGlobals(t *testing.T) {
 	t.Setenv("LISAN_TEST_URL", "https://example.test")
 

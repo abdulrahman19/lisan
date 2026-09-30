@@ -42,11 +42,25 @@ func (e *entry) argNames() []string {
 // locales, together with the plural categories its language requires.
 type regionData struct {
 	entries map[string]*entry
-	code    string
-	name    string
-	locales []string
-	forms   []plural.Form
-	tag     language.Tag
+	// rejected holds identifiers that were declared but failed validation, so
+	// later checks do not also report them as missing.
+	rejected map[string]*entry
+	code     string
+	name     string
+	locales  []string
+	forms    []plural.Form
+	tag      language.Tag
+}
+
+// declaredEntry returns the entry declared under id, valid or not.
+func (r *regionData) declaredEntry(id string) (*entry, bool) {
+	if existing, present := r.entries[id]; present {
+		return existing, true
+	}
+
+	existing, present := r.rejected[id]
+
+	return existing, present
 }
 
 // localeBinding ties a requested locale to the region that serves it. Plural

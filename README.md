@@ -443,11 +443,11 @@ Every problem is reported, not just the first:
 ```
 lisan: compile error: 3 problems in the translation tree
 
-  locales/ar/مستخدمين.json:18:3: id "user.label" declares categories [one many]
-    but ar requires exactly [zero one two few many other]; missing: zero, two, few, other
-  locales/pl-PL/users.json:7:3: id "user.msg.welcome" uses placeholder {{username}},
-    which is not defined for this id in base region "en-US"; did you mean {{name}}?
-  locales/en-GB: id "user.session.active" is declared in base region "en-US" but missing here
+  1. locales/ar/مستخدمين.json:18:3: id "user.label" declares categories [one many]
+     but ar requires exactly [zero one two few many other]; missing: zero, two, few, other
+  2. locales/pl-PL/users.json:7:3: id "user.msg.welcome" uses placeholder {{username}},
+     which is not defined for this id in base region "en-US"; did you mean {{name}}?
+  3. locales/en-GB: id "user.session.active" is declared in base region "en-US" but missing here
 ```
 
 ### Runtime

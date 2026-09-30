@@ -28,7 +28,7 @@ func (c *compiler) addEntry(region *regionData, file *sourceFile, raw rawEntry) 
 		return
 	}
 
-	if existing, duplicate := region.entries[id]; duplicate {
+	if existing, duplicate := region.declaredEntry(id); duplicate {
 		c.problemf(file.path, pos, id,
 			"is already declared in region %q at %s:%d", region.code, existing.file, existing.pos.line)
 
@@ -39,7 +39,11 @@ func (c *compiler) addEntry(region *regionData, file *sourceFile, raw rawEntry) 
 
 	if c.fillEntry(region, built, raw) {
 		region.entries[id] = built
+
+		return
 	}
+
+	region.rejected[id] = built
 }
 
 // fillEntry classifies an entry as plural or non-plural and compiles its text.
@@ -162,24 +166,36 @@ func (c *compiler) validateAgainstBase() {
 // compareRegion reports identifiers that are missing from, or foreign to, a
 // non-base region.
 func (c *compiler) compareRegion(base, region *regionData) {
+	c.reportMissing(base, region)
+
+	for _, id := range sortedKeys(region.entries) {
+		c.compareToBase(base, region.entries[id])
+	}
+}
+
+// reportMissing names every base identifier the region never declares.
+func (c *compiler) reportMissing(base, region *regionData) {
 	for _, id := range sortedKeys(base.entries) {
-		if _, present := region.entries[id]; !present {
+		if _, declared := region.declaredEntry(id); !declared {
 			c.problemf(region.code, textPosition{}, id, "is declared in base region %q but missing here", base.code)
 		}
 	}
+}
 
-	for _, id := range sortedKeys(region.entries) {
-		current := region.entries[id]
-
-		reference, present := base.entries[id]
-		if !present {
-			c.problemAt(current, "is not declared in base region %q", base.code)
-
-			continue
-		}
-
+// compareToBase checks one entry of a non-base region against its counterpart.
+func (c *compiler) compareToBase(base *regionData, current *entry) {
+	if reference, present := base.entries[current.id]; present {
 		c.compareEntry(base.code, reference, current)
+
+		return
 	}
+
+	// A rejected base entry already has its own problem; do not pile on.
+	if _, rejected := base.rejected[current.id]; rejected {
+		return
+	}
+
+	c.problemAt(current, "is not declared in base region %q", base.code)
 }
 
 // compareEntry checks that an identifier keeps the same kind and stays within

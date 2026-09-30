@@ -61,8 +61,8 @@ func (e *CompileError) Error() string {
 	lines := make([]string, 0, len(e.Problems)+1)
 	lines = append(lines, fmt.Sprintf("lisan: compile error: %d problems in %s", len(e.Problems), root))
 
-	for _, problem := range e.Problems {
-		lines = append(lines, "  "+problem.String())
+	for index, problem := range e.Problems {
+		lines = append(lines, fmt.Sprintf("  %d. %s", index+1, problem.String()))
 	}
 
 	return strings.Join(lines, "\n")

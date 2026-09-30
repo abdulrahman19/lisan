@@ -73,12 +73,13 @@ func (c *compiler) loadRegion(code string, declared regionConfig) *regionData {
 	}
 
 	region := &regionData{
-		entries: make(map[string]*entry),
-		code:    code,
-		name:    declared.Name,
-		locales: slices.Clone(declared.Locales),
-		forms:   categoriesFor(tag),
-		tag:     tag,
+		entries:  make(map[string]*entry),
+		rejected: make(map[string]*entry),
+		code:     code,
+		name:     declared.Name,
+		locales:  slices.Clone(declared.Locales),
+		forms:    categoriesFor(tag),
+		tag:      tag,
 	}
 
 	c.checkLocaleTags(region)

@@ -190,8 +190,16 @@ func TestCompileErrorMessage(t *testing.T) {
 		{File: "b.json", Message: "two"},
 	}}
 
-	if got := many.Error(); got == "" || !errors.As(error(many), new(*CompileError)) {
-		t.Errorf("Error() = %q, want a multi-problem summary", got)
+	want := "lisan: compile error: 2 problems in locales/\n" +
+		"  1. a.json: one\n" +
+		"  2. b.json: two"
+
+	if got := many.Error(); got != want {
+		t.Errorf("Error() = %q, want %q", got, want)
+	}
+
+	if !errors.As(error(many), new(*CompileError)) {
+		t.Error("errors.As did not match *CompileError")
 	}
 }
 
